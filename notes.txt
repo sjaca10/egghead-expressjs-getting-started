@@ -1,0 +1,13 @@
+Start npm project:
+    $ npm init -y
+
+Installing express (-S to save dependency in package.json):
+    $ npm i -S express
+
+Installing nodemon to restart server automatically (-D to save as dev dependency in package.json)
+    $ npm i -D nodemon
+
+Configuring index.js scripts:
+    "start": "node index.js", // To execute 'node index.js' with npm start
+    "dev": "nodemon index.js", // To execute 'nodemon index.js' with npm run dev to execute in development mode
+
