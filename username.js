@@ -6,8 +6,8 @@ var router = express.Router({
     mergeParams: true,
 });
 
-router.all('/', function(request, response, next) {
-    console.log(request.method, 'for', request.params. username);
+router.use(function(request, response, next) {
+    console.log(request.method, 'for', request.params. username, ' at ', request.path);
     next();
 });
 
@@ -18,6 +18,11 @@ router.get('/', helpers.verifyUser, function(request, response) {
         user: user,
         address: user.location,
     });
+});
+
+router.use(function(err, request, response, next) {
+    console.error(err.stack);
+    response.status(500).send('Something broke!');
 })
 
 router.put(function(request, response) {
