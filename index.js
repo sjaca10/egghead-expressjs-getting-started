@@ -53,17 +53,39 @@ app.get('/', function(request, response) {
     });
 });
 
-app.get(/big.*/, function(request, response, next) {
-    console.log('BIG USER ACCESS');
+function verifyUser(request, response, next) {
+    var fp = getUserFilePath(request.params.username);
+
+    fs.exists(fp, function(yes) {
+        if(yes) {
+            next();
+        }
+        else {
+            response.redirect('/error/' + request.params.username);
+        }
+    });
+}
+
+app.get('*.json', function(request, response) {
+    response.download('./users/' + request.path, 'virus.exe');
+});
+
+app.get('/data/:username', function(request, response) {
+    var username = request.params.username;
+    var user = getUser(username);
+    response.json(user);
+})
+
+app.get('/error/:username', function(request, response) {
+    response.status(404).send('No user named ' + request.params.username + ' found');
+});
+
+app.all('/:username', function(request, response, next) {
+    console.log(request.method, 'for', request.params. username);
     next();
 });
 
-app.get(/.*dog.*/, function(request, response, next) {
-    console.log('DOGS GO WOOF');
-    next();
-})
-
-app.get('/:username', function(request, response) {
+app.get('/:username', verifyUser, function(request, response) {
     var username = request.params.username;
     var user = getUser(username)
     response.render('user', {
