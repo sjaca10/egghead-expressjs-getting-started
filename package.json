@@ -17,7 +17,8 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/sjaca10/expressjs-getting-started#readme",
   "dependencies": {
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "lodash": "^4.15.0"
   },
   "devDependencies": {
     "nodemon": "^1.10.2"
