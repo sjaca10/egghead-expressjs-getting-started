@@ -31,8 +31,13 @@ router.use(function(err, request, response, next) {
 router.put('/', function(request, response) {
     var username = request.params.username;
     console.log('here');
-    User.findOneAndUpdate({username: username}, {location: request.body}, function(err, user){
-        response.end();
+    User.findOne({username: username}, function(err, user){
+        if (err) throw err;
+        user.name.full = request.body.name;
+        user.location = request.body.location;
+        user.save(function() {
+            response.end();
+        });
     });
 });
 

@@ -24,6 +24,7 @@ MongoClient.connect(uri, function(err, db) {
 });
 **/
 
+var _ = require('lodash');
 var mongoose = require('mongoose');
 mongoose.connect(uri);
 
@@ -40,7 +41,6 @@ var userSchema = mongoose.Schema({
         title: String,
         first: String,
         last: String,
-        full: String,
     },
     location: {
         street: String,
@@ -48,6 +48,16 @@ var userSchema = mongoose.Schema({
         state: String,
         zip: Number,
     }
+});
+
+userSchema.virtual('name.full').get(function() {
+    return _.startCase(this.name.first + ' ' + this.name.last);
+});
+
+userSchema.virtual('name.full').set(function(value) {
+    var bits = value.split(' ');
+    this.name.first = bits[0];
+    this.name.last = bits[1];
 });
 
 exports.User = mongoose.model('User', userSchema);
