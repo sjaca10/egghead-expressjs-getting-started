@@ -17,7 +17,9 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/sjaca10/expressjs-getting-started#readme",
   "dependencies": {
+    "consolidate": "^0.14.1",
     "express": "^4.14.0",
+    "handlebars": "^4.0.5",
     "jade": "^1.11.0",
     "lodash": "^4.15.0"
   },

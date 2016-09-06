@@ -3,6 +3,7 @@ var app = express();
 
 var fs = require('fs');
 var _ = require('lodash');
+var engines = require('consolidate');
 
 var users = [];
 
@@ -15,8 +16,13 @@ fs.readFile('users.json', {encoding: 'utf8'}, function(err, data){
     });
 });
 
+app.engine('hbs', engines.handlebars)
+
 app.set('views', './views');
-app.set('view engine', 'jade');
+app.set('view engine', 'hbs');
+
+app.use('/profilepics', express.static('images'));
+
 
 app.get('/', function(request, response) {
     response.render('index', {users: users})
@@ -34,7 +40,7 @@ app.get(/.*dog.*/, function(request, response, next) {
 
 app.get('/:username', function(request, response) {
     var username = request.params.username;
-    response.send(username);
+    response.render('user', {username: username})
 });
 
 var server = app.listen(3000, function() {
