@@ -10,6 +10,8 @@ var engines = require('consolidate');
 var JSONStream = require('JSONStream');
 var bodyParser = require('body-parser');
 
+var User = require('./db').User;
+
 app.engine('hbs', engines.handlebars)
 
 app.set('views', './views');
@@ -23,17 +25,8 @@ app.get('/favicon.ico', function(request, response){
 });
 
 app.get('/', function(request, response) {
-    var users = [];
-    fs.readdir('users', function(err, files) {
-        if(err) throw err;
-        files.forEach(function(file) {
-            fs.readFile(path.join(__dirname, 'users', file), {encoding: 'utf8'}, function(err, data) {
-                var user = JSON.parse(data);
-                user.name.full = _.startCase(user.name.first + ' ' + user.name.last);
-                users.push(user);
-                if(users.length === files.length) response.render('index', {users: users})
-            })  ;
-        });
+    User.find({}, function(err, users) {
+        response.render('index', {users: users});
     });
 });
 
