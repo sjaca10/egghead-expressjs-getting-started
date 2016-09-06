@@ -5,27 +5,9 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
 var engines = require('consolidate');
+var helpers = require('./helpers');
 
 var bodyParser = require('body-parser');
-
-function getUserFilePath(username) {
-    return path.join(__dirname, 'users', username) + '.json';
-}
-
-function getUser(username) {
-    var user = JSON.parse(fs.readFileSync(getUserFilePath(username), {encoding: 'utf8'}));
-    user.name.full = _.startCase(user.name.first + ' ' + user.name.last);
-    _.keys(user.location).forEach(function (key) {
-        user.location[key] = _.startCase(user.location[key]);
-    });
-    return user;
-}
-
-function saveUser(username, data) {
-    var fp = getUserFilePath(username);
-    fs.unlinkSync(fp) // delete the file
-    fs.writeFileSync(fp, JSON.stringify(data, null, 2), {encoding: 'utf8'});
-}
 
 app.engine('hbs', engines.handlebars)
 
@@ -41,7 +23,8 @@ app.get('/favicon.ico', function(request, response){
 
 app.get('/', function(request, response) {
     var users = [];
-    fs.readdir('users', function(err, files){
+    fs.readdir('users', function(err, files) {
+        if(err) throw err;
         files.forEach(function(file) {
             fs.readFile(path.join(__dirname, 'users', file), {encoding: 'utf8'}, function(err, data) {
                 var user = JSON.parse(data);
@@ -53,26 +36,13 @@ app.get('/', function(request, response) {
     });
 });
 
-function verifyUser(request, response, next) {
-    var fp = getUserFilePath(request.params.username);
-
-    fs.exists(fp, function(yes) {
-        if(yes) {
-            next();
-        }
-        else {
-            response.redirect('/error/' + request.params.username);
-        }
-    });
-}
-
 app.get('*.json', function(request, response) {
     response.download('./users/' + request.path, 'virus.exe');
 });
 
 app.get('/data/:username', function(request, response) {
     var username = request.params.username;
-    var user = getUser(username);
+    var user = helpers.getUser(username);
     response.json(user);
 })
 
@@ -80,33 +50,8 @@ app.get('/error/:username', function(request, response) {
     response.status(404).send('No user named ' + request.params.username + ' found');
 });
 
-app.all('/:username', function(request, response, next) {
-    console.log(request.method, 'for', request.params. username);
-    next();
-});
-
-app.get('/:username', verifyUser, function(request, response) {
-    var username = request.params.username;
-    var user = getUser(username)
-    response.render('user', {
-        user: user,
-        address: user.location,
-    });
-});
-
-app.put('/:username', function(request, response) {
-    var username = request.params.username;
-    var user = getUser(username);
-    user.location = request.body;
-    saveUser(username, user);
-    response.end();
-})
-
-app.delete('/:username', function(request, response) {
-    var fp = getUserFilePath(request.params.username);
-    fs.unlinkSync(fp); // delete the file
-    response.sendStatus(200);
-})
+var userRouter = require('./username');
+app.use('/:username', userRouter);
 
 var server = app.listen(3000, function() {
     console.log('Server running at http://localhost:' + server.address().port);
