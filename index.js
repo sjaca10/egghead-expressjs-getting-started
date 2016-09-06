@@ -5,8 +5,9 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
 var engines = require('consolidate');
-var helpers = require('./helpers');
+// var helpers = require('./helpers');
 
+var JSONStream = require('JSONStream');
 var bodyParser = require('body-parser');
 
 app.engine('hbs', engines.handlebars)
@@ -42,9 +43,21 @@ app.get('*.json', function(request, response) {
 
 app.get('/data/:username', function(request, response) {
     var username = request.params.username;
-    var user = helpers.getUser(username);
-    response.json(user);
-})
+    var readable = fs.createReadStream('./users/' + username + '.json');
+    readable.pipe(response)
+});
+
+app.get('/users/by/:gender', function(request, response) {
+    var gender = request.params.gender;
+    var readable = fs.createReadStream('users.json');
+
+    readable
+        .pipe(JSONStream.parse('*', function(user){
+            if(user.gender === gender) return user;
+        }))
+        .pipe(JSONStream.stringify('[\n ',', \n ','\n]\n'))
+        .pipe(response);
+});
 
 app.get('/error/:username', function(request, response) {
     response.status(404).send('No user named ' + request.params.username + ' found');
